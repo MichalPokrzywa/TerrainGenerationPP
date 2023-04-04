@@ -154,9 +154,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c84242b94edfa5d43aaba804b6441884, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  randomHeightRange: {x: 0, y: 0.1}
+  randomHeightRange: {x: 0, y: 0.05}
   heightMapImage: {fileID: 2800000, guid: 1cff2fde189fe15499e5468fd960c51e, type: 3}
   heightMapScale: {x: 2, y: 1, z: 2}
+  perlinXScale: 0.004
+  perlinYScale: 0.004
+  perlinOffSetX: 4342
+  perlinOffSetY: 2589
   terrain: {fileID: 598183162}
   terrainData: {fileID: 15600000, guid: 0403e532fa3962249a9a0eef5bacc05f, type: 2}
 --- !u!154 &598183161

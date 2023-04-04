@@ -13,14 +13,23 @@ public class CustomTerrainEditor : Editor
     SerializedProperty randomHeightRange;
     SerializedProperty heightMapScale;
     SerializedProperty heightMapImage;
+    SerializedProperty perlinXProperty;
+    SerializedProperty perlinYProperty;
+    SerializedProperty perlinOffSetX;
+    SerializedProperty perlinOffSetY;
     //fold outs--------------------------
     bool showRandom = false;
     bool showLoadHeights = false;
+    bool showPerlin = false;
     void OnEnable()
     {
         randomHeightRange = serializedObject.FindProperty("randomHeightRange");
         heightMapScale = serializedObject.FindProperty("heightMapScale");
         heightMapImage = serializedObject.FindProperty("heightMapImage");
+        perlinXProperty = serializedObject.FindProperty("perlinXScale");
+        perlinYProperty = serializedObject.FindProperty("perlinYScale");
+        perlinOffSetX = serializedObject.FindProperty("perlinOffSetX");
+        perlinOffSetY = serializedObject.FindProperty("perlinOffSetY");
     }
 
     public override void OnInspectorGUI()
@@ -53,6 +62,21 @@ public class CustomTerrainEditor : Editor
                 terrain.LoadTexture();
             }
         }
+        showPerlin = EditorGUILayout.Foldout(showPerlin, "Perlin Noise");
+
+        if (showPerlin)
+        {
+            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+            GUILayout.Label("Set Scale for Perlin Noise", EditorStyles.boldLabel);
+            EditorGUILayout.Slider(perlinXProperty,0,1,new GUIContent("X scale"));
+            EditorGUILayout.Slider(perlinYProperty,0,1,new GUIContent("Y Scale"));
+            EditorGUILayout.IntSlider(perlinOffSetX, 0, 10000, new GUIContent("X Offset"));
+            EditorGUILayout.IntSlider(perlinOffSetY, 0, 10000, new GUIContent("Y Offset"));
+            if (GUILayout.Button("Generate Perlin"))
+            {
+                terrain.Perlin();
+            }
+        }
 
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         
@@ -64,16 +88,4 @@ public class CustomTerrainEditor : Editor
         serializedObject.ApplyModifiedProperties();
     }
 
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
