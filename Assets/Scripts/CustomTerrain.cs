@@ -21,7 +21,20 @@ public class CustomTerrain : MonoBehaviour
 
     public void Perlin()
     {
-        float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.heightmapResolution, terrainData.heightmapResolution);
+        float[,] heightMap = GetHeightMap();
+
+        for (int x = 0; x < terrainData.heightmapResolution; x++)
+        {
+            for (int y = 0; y < terrainData.heightmapResolution; y++)
+            {
+                heightMap[x, y] += Utility.FractalBrownianMotion((x+perlinOffSetX) * perlinXScale,
+                                                                (y+perlinOffSetY) * perlinYScale,
+                                                                perlinOctaves,
+                                                                perlinPersistance) * perlinHeightScale;
+            }
+        }
+        terrainData.SetHeights(0, 0, heightMap);
+    }
 
         for (int x = 0; x < terrainData.heightmapResolution; x++)
         {
