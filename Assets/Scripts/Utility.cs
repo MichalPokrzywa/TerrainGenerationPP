@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class Utility
 {
-    public static float FractalBrownianMotion(float x, float y, int oct, float persistance, int offsetx, int offsety)
+    public static float FractalBrownianMotion(float x, float y, int oct, float persistance)
     {
         float total = 0;
         float frequency = 1;
@@ -13,9 +13,9 @@ public static class Utility
 
         for (int i = 0; i < oct; i++)
         {
-            total += Mathf.PerlinNoise((x + offsetx) * frequency,(y + offsety) * frequency) * amplitude;
+            total += Mathf.PerlinNoise(x  * frequency,y * frequency) * amplitude;
             maxValue += amplitude;
-            amplitude *= frequency;
+            amplitude *= persistance;
             frequency *= 2;
         }
 
