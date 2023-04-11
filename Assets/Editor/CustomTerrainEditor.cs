@@ -14,6 +14,7 @@ public class CustomTerrainEditor : Editor
     SerializedProperty randomHeightRange;
     SerializedProperty heightMapScale;
     SerializedProperty heightMapImage;
+    //perlin
     SerializedProperty perlinXProperty;
     SerializedProperty perlinYProperty;
     SerializedProperty perlinOffSetX;
@@ -21,14 +22,29 @@ public class CustomTerrainEditor : Editor
     SerializedProperty perlinOctaves;
     SerializedProperty perlinPersistance;
     SerializedProperty perlinHeightScale;
-    
     SerializedProperty perlinParameters;
     GUITableState perlinParameterTable;
+    //vonoroi
+    SerializedProperty peakCount;
+    SerializedProperty fallOff;
+    SerializedProperty dropOff;
+    SerializedProperty maxHeight;
+    SerializedProperty minHeight;
+    SerializedProperty voronoiType;
+    //mpd
+    SerializedProperty mpdMinHeight;
+    SerializedProperty mpdMaxHeight;
+    SerializedProperty mpdHeightDampener;
+    SerializedProperty mpdRoughness;
+    SerializedProperty mpdSmoothAmount;
     //fold outs--------------------------
     bool showRandom = false;
     bool showLoadHeights = false;
     bool showPerlin = false;
     bool showMultiplePerlin = false;
+    bool showVonoroi = false;
+    bool showMPD = false;
+    bool showSmooth = false;
     void OnEnable()
     {
         randomHeightRange = serializedObject.FindProperty("randomHeightRange");
@@ -44,7 +60,17 @@ public class CustomTerrainEditor : Editor
         resetTerrain = serializedObject.FindProperty("resetTerrain");
         perlinParameters = serializedObject.FindProperty("perlinParameters");
         perlinParameterTable = new GUITableState("perlinParameterTable");
-
+        peakCount = serializedObject.FindProperty("peakCount");
+        fallOff = serializedObject.FindProperty("fallOff");
+        dropOff = serializedObject.FindProperty("dropOff");
+        maxHeight = serializedObject.FindProperty("maxHeight");
+        minHeight = serializedObject.FindProperty("minHeight");
+        voronoiType = serializedObject.FindProperty("voronoiType");
+        mpdMinHeight = serializedObject.FindProperty("mpdMinHeight");
+        mpdMaxHeight = serializedObject.FindProperty("mpdMaxHeight");
+        mpdHeightDampener = serializedObject.FindProperty("mpdHeightDampener");
+        mpdRoughness = serializedObject.FindProperty("mpdRoughness");
+        mpdSmoothAmount = serializedObject.FindProperty("mpdSmoothAmount");
     }
 
     public override void OnInspectorGUI()
@@ -119,6 +145,45 @@ public class CustomTerrainEditor : Editor
             if (GUILayout.Button("Apply"))
             {
                 terrain.MultiplePerlinTerrain();
+            }
+        }
+        showVonoroi = EditorGUILayout.Foldout(showVonoroi, "Voronoi");
+        if (showVonoroi)
+        {
+            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+            EditorGUILayout.IntSlider(peakCount, 1, 10, new GUIContent("Peak Count"));
+            EditorGUILayout.Slider(fallOff, 0, 10, new GUIContent("Fall off"));
+            EditorGUILayout.Slider(dropOff, 0, 10, new GUIContent("Drop off"));
+            EditorGUILayout.Slider(minHeight, 0, 1, new GUIContent("Min Height"));
+            EditorGUILayout.Slider(maxHeight, 0, 1, new GUIContent("Max Height"));
+            EditorGUILayout.PropertyField(voronoiType);
+            if (GUILayout.Button("Voronoi"))
+            {
+                terrain.Vonoroi();
+            }
+
+        }
+        showMPD = EditorGUILayout.Foldout(showMPD, "MPD");
+
+        if (showMPD)
+        {
+            EditorGUILayout.PropertyField(mpdMaxHeight);
+            EditorGUILayout.PropertyField(mpdMinHeight);
+            EditorGUILayout.PropertyField(mpdHeightDampener);
+            EditorGUILayout.PropertyField(mpdRoughness);
+            if (GUILayout.Button("MidPoint Displacement"))
+            {
+                terrain.MidPointDisplaceMent();
+            }
+        }
+        showSmooth = EditorGUILayout.Foldout(showSmooth, "Smooth");
+
+        if (showSmooth)
+        {
+            EditorGUILayout.IntSlider(mpdSmoothAmount, 1, 10, new GUIContent("Smooth Amount"));
+            if (GUILayout.Button("Smooth"))
+            {
+                terrain.Smooth();
             }
         }
 

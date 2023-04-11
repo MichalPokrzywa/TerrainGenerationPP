@@ -154,16 +154,53 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c84242b94edfa5d43aaba804b6441884, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  resetTerrain: 1
   randomHeightRange: {x: 0, y: 0.05}
   heightMapImage: {fileID: 2800000, guid: 1cff2fde189fe15499e5468fd960c51e, type: 3}
   heightMapScale: {x: 2, y: 1, z: 2}
-  perlinXScale: 0.1
-  perlinYScale: 0.1
-  perlinOffSetX: 4242
-  perlinOffSetY: 4191
-  perlinOctaves: 2
-  perlinPersistance: 4.64
-  perlinHeightScale: 0.1
+  perlinXScale: 0.0001
+  perlinYScale: 0.0001
+  perlinOffSetX: 4041
+  perlinOffSetY: 5293
+  perlinOctaves: 7
+  perlinPersistance: 2.61
+  perlinHeightScale: 0.602
+  perlinParameters:
+  - perlinXScale: 0.01
+    perlinYScale: 0.01
+    perlinOctaves: 3
+    perlinPersistance: 8
+    perlinHeightScale: 0.09
+    perlinOffSetX: 1421
+    perlinOffSetY: 0
+    remove: 0
+  - perlinXScale: 0.04
+    perlinYScale: 0.04
+    perlinOctaves: 1
+    perlinPersistance: 4
+    perlinHeightScale: 0.2
+    perlinOffSetX: 451
+    perlinOffSetY: 412
+    remove: 0
+  - perlinXScale: 0.1
+    perlinYScale: 0.1
+    perlinOctaves: 4
+    perlinPersistance: 2
+    perlinHeightScale: 0.09
+    perlinOffSetX: 4
+    perlinOffSetY: 154
+    remove: 0
+  peakCount: 6
+  fallOff: 2.24
+  dropOff: 4.64
+  maxHeight: 0.662
+  minHeight: 0.259
+  voronoiType: 0
+  mpdRoughness: 2
+  mpdMaxHeight: 2
+  mpdMinHeight: -2
+  mpdHeightDampener: 2
+  mpdSmoothAmount: 6
   terrain: {fileID: 598183162}
   terrainData: {fileID: 15600000, guid: 0403e532fa3962249a9a0eef5bacc05f, type: 2}
 --- !u!154 &598183161
