@@ -37,6 +37,13 @@ public class CustomTerrainEditor : Editor
     SerializedProperty mpdHeightDampener;
     SerializedProperty mpdRoughness;
     SerializedProperty mpdSmoothAmount;
+    //texture
+    SerializedProperty textureLayers;
+    //SerializedProperty textureOffset;
+    //SerializedProperty textureNoiseX;
+    //SerializedProperty textureNoiseY;
+    //SerializedProperty textureNoiseMultiplayer;
+    GUITableState textureLayersTable;
     //fold outs--------------------------
     bool showRandom = false;
     bool showLoadHeights = false;
@@ -45,6 +52,7 @@ public class CustomTerrainEditor : Editor
     bool showVonoroi = false;
     bool showMPD = false;
     bool showSmooth = false;
+    bool showTexutureLayers = false;
     void OnEnable()
     {
         randomHeightRange = serializedObject.FindProperty("randomHeightRange");
@@ -71,15 +79,22 @@ public class CustomTerrainEditor : Editor
         mpdHeightDampener = serializedObject.FindProperty("mpdHeightDampener");
         mpdRoughness = serializedObject.FindProperty("mpdRoughness");
         mpdSmoothAmount = serializedObject.FindProperty("mpdSmoothAmount");
+        textureLayers = serializedObject.FindProperty("textureLayers");
+        //textureOffset = serializedObject.FindProperty("textureOffset");
+        //textureNoiseMultiplayer = serializedObject.FindProperty("noiseMultiplayer");
+        //textureNoiseX = serializedObject.FindProperty("noiseX");
+        //textureNoiseY = serializedObject.FindProperty("noiseY");
+        textureLayersTable = new GUITableState("textureLayerTable");
     }
 
+    Vector2 scrollPos;
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
 
         CustomTerrain terrain = (CustomTerrain)target;
+
         EditorGUILayout.PropertyField(resetTerrain);
-        
         showRandom = EditorGUILayout.Foldout(showRandom, "Random");
         if (showRandom)
         {
@@ -187,13 +202,44 @@ public class CustomTerrainEditor : Editor
             }
         }
 
+        showTexutureLayers = EditorGUILayout.Foldout(showTexutureLayers, "Texture Layers");
+        if (showTexutureLayers)
+        {
+            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+            GUILayout.Label("Texture Modifier", EditorStyles.boldLabel);
+            //EditorGUILayout.Slider(textureOffset, 0.0f, 1f, new GUIContent("Texture Offset"));
+            //EditorGUILayout.Slider(textureNoiseMultiplayer, 0.0f, 1f, new GUIContent("Texture Noise Multiplier"));
+            //EditorGUILayout.Slider(textureNoiseY, 0.0f, 1f, new GUIContent("Texture NoiseY"));
+            //EditorGUILayout.Slider(textureNoiseX, 0.0f, 1f, new GUIContent("Texture NoiseX"));
+            GUILayout.Label("Texture Layers", EditorStyles.boldLabel);
+            textureLayersTable = GUITableLayout.DrawTable(textureLayersTable, serializedObject.FindProperty("textureLayers"));
+            GUILayout.Space(20);
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("+"))
+            {
+                terrain.AddNewTextureLayer();
+            }
+            if (GUILayout.Button("-"))
+            {
+                terrain.RemoveTextureLayer();
+            }
+            EditorGUILayout.EndHorizontal();
+            if (GUILayout.Button("Apply"))
+            {
+                terrain.TextureLayers();
+            }
+            if (GUILayout.Button("Remove Texture From Terrain"))
+            {
+                terrain.RemoveAllTextureFromTerrain();
+            }
+        }
+
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         
         if (GUILayout.Button("Reset Terrain"))
         {
             terrain.ResetTerrain();
         }
-
         serializedObject.ApplyModifiedProperties();
     }
 

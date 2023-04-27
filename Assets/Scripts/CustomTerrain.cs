@@ -57,7 +57,31 @@ public class CustomTerrain : MonoBehaviour
     public float mpdMinHeight = -2.0f;
     public float mpdHeightDampener = 2.0f;
     public int mpdSmoothAmount = 1;
+    //Texture Layer---------------------------------------
+    [System.Serializable]
+    public class TextureLayer
+    {
+        public Texture2D texture = null;
+        public float minHeight = 0.1f;
+        public float maxHeight = 0.2f;
+        public float minSlope = 0f;
+        public float maxSlope = 1.5f;
+        public Vector2 tileOffset = new Vector2(0, 0);
+        public Vector2 tileSize = new Vector2(50, 50);
+        public float textureOffset = 0.01f;
+        public float noiseMultiplayer = 0.1f;
+        public float noiseX = 0.01f;
+        public float noiseY = 0.01f;
+        public bool remove = false;
+    }
+    public List<TextureLayer> textureLayers = new List<TextureLayer>()
+    {
+        new TextureLayer()
+    };
+
+
     //---------------------------------------------
+
     public Terrain terrain;
     public TerrainData terrainData;
 
@@ -316,6 +340,118 @@ public class CustomTerrain : MonoBehaviour
             }
         }
         return neighbours;
+    }
+
+    public void AddNewTextureLayer()
+    {
+        textureLayers.Add(new TextureLayer());
+    }
+
+    public void RemoveTextureLayer()
+    {
+        List<TextureLayer> keptTextureLayers = new List<TextureLayer>();
+        foreach (TextureLayer t in textureLayers)
+        {
+            if (!t.remove)
+            {
+                keptTextureLayers.Add(t);
+            }
+        }
+        if (keptTextureLayers.Count == 0)
+        {
+            keptTextureLayers.Add(textureLayers[0]);
+        }
+
+        textureLayers = keptTextureLayers;
+    }
+
+    public void RemoveAllTextureFromTerrain()
+    {
+        terrainData.terrainLayers = null;
+    }
+
+    private float GetSteepness(float[,] heightMap, int x, int y, int width, int height)
+    {
+        float h= heightMap[x,y];
+        int nx = x + 1;
+        int ny = y + 1;
+
+        if (nx > width - 1) nx = x - 1;
+        if (ny > height - 1) ny = y - 1;
+
+        float dx = heightMap[nx, y] - h;
+        float dy = heightMap[x, ny] - h;
+        Vector2 gradient = new Vector2(dx, dy);
+        
+        float steep = gradient.magnitude;
+
+        return steep;
+    }
+
+    public void TextureLayers()
+    {
+        TerrainLayer[] newTerrainLayers = new TerrainLayer[textureLayers.Count];
+        for (int tlIndex = 0; tlIndex < textureLayers.Count; tlIndex++)
+        {
+            TextureLayer texture = textureLayers[tlIndex];
+            if (texture.texture != null)
+            {
+                newTerrainLayers[tlIndex] = new TerrainLayer();
+                newTerrainLayers[tlIndex].diffuseTexture = texture.texture;
+                newTerrainLayers[tlIndex].tileOffset = texture.tileOffset;
+                newTerrainLayers[tlIndex].tileSize = texture.tileSize;
+                newTerrainLayers[tlIndex].diffuseTexture.Apply(true);
+            }
+        }
+        terrainData.terrainLayers = newTerrainLayers;
+
+        float[,] heightMap =
+            terrainData.GetHeights(0, 0, terrainData.heightmapResolution, terrainData.heightmapResolution);
+        float[,,] terrainLayerData =
+            new float[terrainData.alphamapWidth, terrainData.alphamapHeight, terrainData.alphamapLayers];
+        for (int y = 0; y < terrainData.alphamapHeight; y++)
+        {
+            for (int x = 0; x < terrainData.alphamapWidth; x++)
+            {
+                float[] layer = new float[terrainData.alphamapLayers];
+                for (int i = 0; i < textureLayers.Count; i++)
+                {
+                    float noise = Mathf.PerlinNoise(x * textureLayers[i].noiseX, y * textureLayers[i].noiseY) * textureLayers[i].noiseMultiplayer;
+                    float finalOffset = textureLayers[i].textureOffset + noise;
+                    float thisHeightStart = textureLayers[i].minHeight - finalOffset;
+                    float thisHeightStop = textureLayers[i].maxHeight + finalOffset;
+                    //float steepness = GetSteepness(heightMap, x, y, terrainData.heightmapResolution,
+                    //    terrainData.heightmapResolution);
+                    float steepness = terrainData.GetSteepness(y / (float)terrainData.alphamapHeight,
+                        x / (float)terrainData.alphamapWidth);
+                    if (heightMap[x, y] >= thisHeightStart && heightMap[x, y] <= thisHeightStop &&
+                        steepness >= textureLayers[i].minSlope && steepness <= textureLayers[i].maxSlope)
+                    {
+                        layer[i] = 1;
+                    }
+                }
+                NormalizeVector(layer);
+                for (int j = 0; j < textureLayers.Count; j++)
+                {
+                    terrainLayerData[x,y,j] = layer[j];
+                }
+            }
+        }
+        terrainData.SetAlphamaps(0,0,terrainLayerData);
+    }
+
+    private void NormalizeVector(float[] layer)
+    {
+        float total = 0;
+        for (int i = 0; i < layer.Length; i++)
+        {
+            total += layer[i];
+        }
+
+        for (int i = 0; i < layer.Length; i++)
+        {
+            layer[i]/= total;
+        }
     }
 
     public void RandomTerrain()
