@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using EditorGUITable;
@@ -44,6 +45,11 @@ public class CustomTerrainEditor : Editor
     //SerializedProperty textureNoiseY;
     //SerializedProperty textureNoiseMultiplayer;
     GUITableState textureLayersTable;
+    //vegetation
+    GUITableState vegetationTable;
+    SerializedProperty vegetationMaxTree;
+    SerializedProperty vegetationSpacing;
+
     //fold outs--------------------------
     bool showRandom = false;
     bool showLoadHeights = false;
@@ -53,6 +59,11 @@ public class CustomTerrainEditor : Editor
     bool showMPD = false;
     bool showSmooth = false;
     bool showTexutureLayers = false;
+    bool showHeightTexture = false;
+    bool showVegetation = false;
+    //---------------------------
+    private Texture2D hmTexture;
+    SerializedProperty terrainPastDatas;
     void OnEnable()
     {
         randomHeightRange = serializedObject.FindProperty("randomHeightRange");
@@ -80,11 +91,18 @@ public class CustomTerrainEditor : Editor
         mpdRoughness = serializedObject.FindProperty("mpdRoughness");
         mpdSmoothAmount = serializedObject.FindProperty("mpdSmoothAmount");
         textureLayers = serializedObject.FindProperty("textureLayers");
+        terrainPastDatas = serializedObject.FindProperty("terrainPastDatas");
         //textureOffset = serializedObject.FindProperty("textureOffset");
         //textureNoiseMultiplayer = serializedObject.FindProperty("noiseMultiplayer");
         //textureNoiseX = serializedObject.FindProperty("noiseX");
         //textureNoiseY = serializedObject.FindProperty("noiseY");
         textureLayersTable = new GUITableState("textureLayerTable");
+        vegetationTable = new GUITableState("vegetationTable");
+        vegetationMaxTree = serializedObject.FindProperty("maxTrees");
+        vegetationSpacing = serializedObject.FindProperty("treeSpacing");
+
+
+        hmTexture = new Texture2D(513, 513, TextureFormat.ARGB32, false);
     }
 
     Vector2 scrollPos;
@@ -233,6 +251,77 @@ public class CustomTerrainEditor : Editor
                 terrain.RemoveAllTextureFromTerrain();
             }
         }
+        showVegetation = EditorGUILayout.Foldout(showVegetation, "Vegetation");
+        if (showVegetation)
+        {
+            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+            GUILayout.Label("Vegetation", EditorStyles.boldLabel);
+            EditorGUILayout.IntSlider(vegetationMaxTree, 1, 10000, new GUIContent("Maximum Trees"));
+            EditorGUILayout.IntSlider(vegetationSpacing, 2, 20, new GUIContent("Trees Spacing"));
+            textureLayersTable = GUITableLayout.DrawTable(vegetationTable, serializedObject.FindProperty("vegetation"));
+            GUILayout.Space(20);
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("+"))
+            {
+                terrain.AddNewVegetation();
+            }
+
+            if (GUILayout.Button("-"))
+            {
+                terrain.RemoveVegetation();
+            }
+
+            EditorGUILayout.EndHorizontal();
+            if (GUILayout.Button("Apply Vegetation"))
+            {
+                terrain.PlantVegetation();
+            }
+
+            if (GUILayout.Button("Remove Vegetation From Terrain"))
+            {
+                //terrain.RemoveAllTextureFromTerrain();
+            }
+        }
+
+        showHeightTexture = EditorGUILayout.Foldout(showHeightTexture, "Height Map");
+        if (showHeightTexture)
+        {
+            
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            int hmtSize = (int)(EditorGUIUtility.currentViewWidth - 100);
+            GUILayout.Label(hmTexture, GUILayout.Width(hmtSize),GUILayout.Height(hmtSize));
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("Refresh", GUILayout.Width(hmtSize)))
+            {
+
+                float[,] heightMap = terrain.terrainData.GetHeights(0,0,terrain.terrainData.heightmapResolution, terrain.terrainData.heightmapResolution);
+                for (int y = 0; y < terrain.terrainData.heightmapResolution; y++)
+                {
+                    for (int x = 0; x < terrain.terrainData.heightmapResolution; x++)
+                    {
+                        hmTexture.SetPixel(x,y,new Color(heightMap[x, y], heightMap[x, y], heightMap[x,y],1));
+                    }
+                }
+                hmTexture.Apply();
+            }
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            string filename = EditorGUILayout.TextField("Texture Name", "heightMap");
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("Save", GUILayout.Width(hmtSize)))
+            {
+                byte[] bytes = hmTexture.EncodeToPNG();
+                Directory.CreateDirectory(Application.dataPath + "/savedHeightMaps");
+                File.WriteAllBytes(Application.dataPath + "/savedHeightMaps/" + filename + ".png", bytes);
+            }
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+        }
 
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         
@@ -240,7 +329,10 @@ public class CustomTerrainEditor : Editor
         {
             terrain.ResetTerrain();
         }
+        if (GUILayout.Button("Undo"))
+        {
+            terrain.UndoTerrain();
+        }
         serializedObject.ApplyModifiedProperties();
     }
-
 }

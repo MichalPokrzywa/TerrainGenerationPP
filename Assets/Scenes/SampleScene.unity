@@ -134,128 +134,14 @@ GameObject:
   - component: {fileID: 598183163}
   - component: {fileID: 598183162}
   - component: {fileID: 598183161}
-  - component: {fileID: 598183160}
-  m_Layer: 0
+  - component: {fileID: 598183164}
+  m_Layer: 8
   m_Name: Terrain
   m_TagString: Terrain
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
   m_IsActive: 1
---- !u!114 &598183160
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 598183159}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c84242b94edfa5d43aaba804b6441884, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  resetTerrain: 0
-  randomHeightRange: {x: 0, y: 0.05}
-  heightMapImage: {fileID: 2800000, guid: 1cff2fde189fe15499e5468fd960c51e, type: 3}
-  heightMapScale: {x: 2, y: 1, z: 2}
-  perlinXScale: 0.0001
-  perlinYScale: 0.0001
-  perlinOffSetX: 4041
-  perlinOffSetY: 4258
-  perlinOctaves: 7
-  perlinPersistance: 2.61
-  perlinHeightScale: 0.602
-  perlinParameters:
-  - perlinXScale: 0.01
-    perlinYScale: 0.01
-    perlinOctaves: 3
-    perlinPersistance: 8
-    perlinHeightScale: 0.09
-    perlinOffSetX: 1421
-    perlinOffSetY: 0
-    remove: 0
-  - perlinXScale: 0.04
-    perlinYScale: 0.04
-    perlinOctaves: 1
-    perlinPersistance: 4
-    perlinHeightScale: 0.1
-    perlinOffSetX: 451
-    perlinOffSetY: 412
-    remove: 0
-  - perlinXScale: 0.1
-    perlinYScale: 0.1
-    perlinOctaves: 4
-    perlinPersistance: 2
-    perlinHeightScale: 0.09
-    perlinOffSetX: 4
-    perlinOffSetY: 154
-    remove: 0
-  - perlinXScale: 0.03
-    perlinYScale: 0.01
-    perlinOctaves: 3
-    perlinPersistance: 4
-    perlinHeightScale: 0.09
-    perlinOffSetX: 0
-    perlinOffSetY: 0
-    remove: 0
-  - perlinXScale: 0.01
-    perlinYScale: 0.05
-    perlinOctaves: 1
-    perlinPersistance: 2
-    perlinHeightScale: 0.01
-    perlinOffSetX: 2893
-    perlinOffSetY: 253
-    remove: 0
-  peakCount: 6
-  fallOff: 2.24
-  dropOff: 3.17
-  maxHeight: 0.391
-  minHeight: 0.205
-  voronoiType: 2
-  mpdRoughness: 2
-  mpdMaxHeight: 1
-  mpdMinHeight: -2
-  mpdHeightDampener: 2
-  mpdSmoothAmount: 2
-  textureLayers:
-  - texture: {fileID: 2800000, guid: 89d7186bb29164a87905f17c084e4206, type: 3}
-    minHeight: 0
-    maxHeight: 0.2
-    minSlope: 0
-    maxSlope: 45
-    tileOffset: {x: 0, y: 0}
-    tileSize: {x: 40, y: 50}
-    textureOffset: 0.01
-    noiseMultiplayer: 0.1
-    noiseX: 0.01
-    noiseY: 0.01
-    remove: 0
-  - texture: {fileID: 2800000, guid: 9b7c827a6d0c9422bbd2cd938babf257, type: 3}
-    minHeight: 0.001
-    maxHeight: 0.1
-    minSlope: 0
-    maxSlope: 45
-    tileOffset: {x: 0, y: 0}
-    tileSize: {x: 50, y: 50}
-    textureOffset: 0.01
-    noiseMultiplayer: 0.1
-    noiseX: 0.01
-    noiseY: 0.01
-    remove: 0
-  - texture: {fileID: 2800000, guid: 858e483d613d848cb935156b41553e4d, type: 3}
-    minHeight: 0
-    maxHeight: 0.001
-    minSlope: 0
-    maxSlope: 54
-    tileOffset: {x: 0, y: 0}
-    tileSize: {x: 50, y: 50}
-    textureOffset: 0.01
-    noiseMultiplayer: 0.1
-    noiseX: 0.01
-    noiseY: 0.01
-    remove: 0
-  terrain: {fileID: 598183162}
-  terrainData: {fileID: 15600000, guid: 0403e532fa3962249a9a0eef5bacc05f, type: 2}
 --- !u!154 &598183161
 TerrainCollider:
   m_ObjectHideFlags: 0
@@ -316,6 +202,158 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &598183164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 598183159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c84242b94edfa5d43aaba804b6441884, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  resetTerrain: 0
+  randomHeightRange: {x: 0, y: 0.1}
+  heightMapImage: {fileID: 0}
+  heightMapScale: {x: 1, y: 1, z: 1}
+  perlinXScale: 0.01
+  perlinYScale: 0.01
+  perlinOffSetX: 0
+  perlinOffSetY: 0
+  perlinOctaves: 3
+  perlinPersistance: 8
+  perlinHeightScale: 0.09
+  perlinParameters:
+  - perlinXScale: 0.01
+    perlinYScale: 0.01
+    perlinOctaves: 3
+    perlinPersistance: 8
+    perlinHeightScale: 0.09
+    perlinOffSetX: 0
+    perlinOffSetY: 0
+    remove: 0
+  peakCount: 4
+  fallOff: 1.78
+  dropOff: 2.15
+  maxHeight: 0.281
+  minHeight: 0.129
+  voronoiType: 3
+  mpdRoughness: 2
+  mpdMaxHeight: 2
+  mpdMinHeight: -2
+  mpdHeightDampener: 2
+  mpdSmoothAmount: 2
+  textureLayers:
+  - texture: {fileID: 2800000, guid: 3a7915e2b99cd4d5a9f01b075f2ad6e9, type: 3}
+    minHeight: 0.1
+    maxHeight: 0.4
+    minSlope: 0
+    maxSlope: 30
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 30, y: 30}
+    textureOffset: 0.01
+    noiseMultiplayer: 0.1
+    noiseX: 0.01
+    noiseY: 0.01
+    remove: 0
+  - texture: {fileID: 2800000, guid: e2178dc607c6a40acaf16e334f21d015, type: 3}
+    minHeight: 0.1
+    maxHeight: 0.2
+    minSlope: 30
+    maxSlope: 60
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 50, y: 50}
+    textureOffset: 0.01
+    noiseMultiplayer: 0.1
+    noiseX: 0.01
+    noiseY: 0.01
+    remove: 0
+  - texture: {fileID: 2800000, guid: cf232666bd1f04c1a8a5a7f71eb60617, type: 3}
+    minHeight: 0.4
+    maxHeight: 1
+    minSlope: 60
+    maxSlope: 90
+    tileOffset: {x: 0, y: 5.32}
+    tileSize: {x: 30, y: 10}
+    textureOffset: 0.01
+    noiseMultiplayer: 0.1
+    noiseX: 0.01
+    noiseY: 0.01
+    remove: 0
+  - texture: {fileID: 2800000, guid: 3c4eba8a46a5a4aa5a00cb059b4f2ce4, type: 3}
+    minHeight: 0.4
+    maxHeight: 1
+    minSlope: 0
+    maxSlope: 60
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 50, y: 50}
+    textureOffset: 0.01
+    noiseMultiplayer: 0.1
+    noiseX: 0.01
+    noiseY: 0.01
+    remove: 0
+  - texture: {fileID: 2800000, guid: dd49ed99f55924d13bacefd240626bc5, type: 3}
+    minHeight: 0
+    maxHeight: 0.1
+    minSlope: 0
+    maxSlope: 50
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 50, y: 50}
+    textureOffset: 0.01
+    noiseMultiplayer: 0.1
+    noiseX: 0.01
+    noiseY: 0.01
+    remove: 0
+  - texture: {fileID: 2800000, guid: e2178dc607c6a40acaf16e334f21d015, type: 3}
+    minHeight: 0.2
+    maxHeight: 0.4
+    minSlope: 0
+    maxSlope: 90
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 50, y: 50}
+    textureOffset: 0.01
+    noiseMultiplayer: 0.1
+    noiseX: 0.01
+    noiseY: 0.01
+    remove: 0
+  - texture: {fileID: 2800000, guid: 1e37030fd131446698e39f9f5a0159e6, type: 3}
+    minHeight: 0
+    maxHeight: 0.1
+    minSlope: 50
+    maxSlope: 90
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 50, y: 50}
+    textureOffset: 0.01
+    noiseMultiplayer: 0.1
+    noiseX: 0.01
+    noiseY: 0.01
+    remove: 0
+  - texture: {fileID: 2800000, guid: c12fba8bcc2ef4b959d67f60ca59d886, type: 3}
+    minHeight: 0.2
+    maxHeight: 0.4
+    minSlope: 30
+    maxSlope: 90
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 50, y: 50}
+    textureOffset: 0.01
+    noiseMultiplayer: 0.1
+    noiseX: 0.01
+    noiseY: 0.01
+    remove: 0
+  vegetation:
+  - mesh: {fileID: -927199367670048503, guid: 43202a31bd1113061100b7a844295342, type: 3}
+    minHeight: 0
+    maxHeight: 0.4
+    minSlope: 0
+    maxSlope: 90
+    remove: 0
+  maxTrees: 10000
+  treeSpacing: 11
+  terrain: {fileID: 598183162}
+  terrainData: {fileID: 15600000, guid: 0403e532fa3962249a9a0eef5bacc05f, type: 2}
+  terrainLayer: 8
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
