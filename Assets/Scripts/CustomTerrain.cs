@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using System.Linq;
 using Random = UnityEngine.Random;
+using UnityEngine.Diagnostics;
 
 [ExecuteInEditMode]
 public class CustomTerrain : MonoBehaviour
@@ -89,6 +90,14 @@ public class CustomTerrain : MonoBehaviour
         public float maxHeight = 0.2f;
         public float minSlope = 0f;
         public float maxSlope = 90f;
+        public float minScale = 0.5f;
+        public float maxScale = 1.0f;
+        public Color colour1 = Color.white;
+        public Color colour2 = Color.white;
+        public Color lightColour = Color.white;
+        public float minRotation = 0;
+        public float maxRotation = 360;
+        public float density = 0.5f;
         public bool remove = false;
     }
     public List<Vegetation> vegetation = new List<Vegetation>()
@@ -98,6 +107,36 @@ public class CustomTerrain : MonoBehaviour
 
     public int maxTrees = 5000;
     public int treeSpacing = 5;
+    // Details --------------------------------------------------------
+    [System.Serializable]
+    public class Detail
+    {
+        public GameObject prototype = null;
+        public Texture2D prototypeTexture = null;
+        public float minHeight = 0.1f;
+        public float maxHeight = 0.2f;
+        public float minSlope = 0;
+        public float maxSlope = 1;
+        public Color dryColour = Color.white;
+        public Color healthyColour = Color.white;
+        public Vector2 heightRange = new Vector2(1, 1);
+        public Vector2 widthRange = new Vector2(1, 1);
+        public float noiseSpread = 0.5f;
+        public float overlap = 0.01f;
+        public float feather = 0.05f;
+        public float density = 0.5f;
+        public bool remove = false;
+    }
+    public List<Detail> details = new List<Detail>() {
+        new Detail()
+    };
+
+    public int maxDetails = 5000;
+    public int detailSpacing = 5;
+    //Water Level -------------------------------------------
+    public float waterHeight = 0.5f;
+    public GameObject waterGO;
+    public Material shoreLineMaterial;
     //---------------------------------------------
 
     public Terrain terrain;
@@ -504,6 +543,11 @@ public class CustomTerrain : MonoBehaviour
 
         vegetation = keptVegetations;
     }
+    public void RemoveAllVegetationFromTerrain()
+    {
+        terrainData.treeInstances = Array.Empty<TreeInstance>();
+        terrainData.treePrototypes = Array.Empty<TreePrototype>();
+    }
 
     public void PlantVegetation()
     {
@@ -525,11 +569,15 @@ public class CustomTerrain : MonoBehaviour
             {
                 for (int tp = 0; tp < terrainData.treePrototypes.Length; tp++)
                 {
+                    if (Random.Range(0.0f, 1.0f) > vegetation[tp].density)
+                        break;
+
                     float thisHeight = terrainData.GetHeight(x, z) / terrainData.size.y;
                     float thisHeightStart = vegetation[tp].minHeight;
                     float thisHeightStop = vegetation[tp].maxHeight;
-                    Debug.Log(thisHeight >= thisHeightStart && thisHeight <= thisHeightStop);
-                    if (thisHeight >= thisHeightStart && thisHeight <= thisHeightStop)
+                    float steepness = terrainData.GetSteepness(x/(float)terrainData.size.x, z / (float)terrainData.size.y);
+                    if ((thisHeight >= thisHeightStart && thisHeight <= thisHeightStop) && 
+                        (steepness >= vegetation[tp].minSlope && steepness <= vegetation[tp].maxSlope))
                     {
                         TreeInstance instance = new TreeInstance();
                         instance.position = new Vector3((x + Random.Range(-5.0f, 5.0f)) / terrainData.size.x,
@@ -540,23 +588,24 @@ public class CustomTerrain : MonoBehaviour
                                                    instance.position.y * terrainData.size.y,
                                                    instance.position.z * terrainData.size.z) +
                                                this.transform.position;
-
-                        int layerMask = 1 << terrainLayer;
                         RaycastHit hit;
-                        //Debug.Log(Physics.Raycast(treeWorldPos, Vector3.down, out hit, 100, layerMask) ||
-                        //          Physics.Raycast(treeWorldPos, Vector3.up, out hit, 100, layerMask)||
-                        //          this.transform.position.y == instance.position.y);
-                        if (Physics.Raycast(treeWorldPos + new Vector3(0, 10, 0), Vector3.down, out hit , 100, layerMask) || 
+                        int layerMask = 1 << terrainLayer;
+                        //Debug.Log(Physics.Raycast(treeWorldPos + new Vector3(0, 10, 0), Vector3.down, out hit, 100, layerMask) ||
+                        //          Physics.Raycast(treeWorldPos - new Vector3(0, 10, 0), Vector3.up, out hit, 100, layerMask));
+                        if (Physics.Raycast(treeWorldPos + new Vector3(0, 10, 0), -Vector3.up, out hit, 100, layerMask) ||
                             Physics.Raycast(treeWorldPos - new Vector3(0, 10, 0), Vector3.up, out hit, 100, layerMask))
                         {
+                            
                             float treeHeight = (hit.point.y - this.transform.position.y) / terrainData.size.y;
                             instance.position = new Vector3(instance.position.x, treeHeight, instance.position.z);
-                            instance.rotation = UnityEngine.Random.Range(0, 360);
+                            instance.rotation = Random.Range(vegetation[tp].minRotation, vegetation[tp].maxRotation);
                             instance.prototypeIndex = tp;
-                            instance.color = Color.white;
-                            instance.lightmapColor = Color.white;
-                            instance.heightScale = 0.95f;
-                            instance.widthScale = 0.95f;
+                            instance.color = Color.Lerp(vegetation[tp].colour1, vegetation[tp].colour2, Random.Range(0.0f,1.0f));
+                            instance.lightmapColor = vegetation[tp].lightColour;
+                            float randomScale = Random.Range(vegetation[tp].minScale, vegetation[tp].maxScale);
+                            instance.heightScale = randomScale;
+                            instance.widthScale = randomScale;
+
                             allVegetation.Add(instance);
                             if (allVegetation.Count >= maxTrees)
                             {
@@ -569,6 +618,213 @@ public class CustomTerrain : MonoBehaviour
             }
         }
         terrainData.treeInstances = allVegetation.ToArray();
+    }
+
+    public void AddDetails()
+    {
+        DetailPrototype[] newDetailPrototypes;
+        newDetailPrototypes = new DetailPrototype[details.Count];
+        int dIndex = 0;
+        float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.heightmapResolution,
+                                            terrainData.heightmapResolution);
+
+        foreach (Detail d in details)
+        {
+            newDetailPrototypes[dIndex] = new DetailPrototype();
+            newDetailPrototypes[dIndex].prototype = d.prototype;
+            newDetailPrototypes[dIndex].prototypeTexture = d.prototypeTexture;
+            newDetailPrototypes[dIndex].healthyColor = d.healthyColour;
+            newDetailPrototypes[dIndex].dryColor = d.dryColour;
+            newDetailPrototypes[dIndex].minHeight = d.heightRange.x;
+            newDetailPrototypes[dIndex].maxHeight = d.heightRange.y;
+            newDetailPrototypes[dIndex].minWidth = d.widthRange.x;
+            newDetailPrototypes[dIndex].maxWidth = d.widthRange.y;
+            newDetailPrototypes[dIndex].noiseSpread = d.noiseSpread;
+
+            if (newDetailPrototypes[dIndex].prototype)
+            {
+                newDetailPrototypes[dIndex].usePrototypeMesh = true;
+                newDetailPrototypes[dIndex].renderMode = DetailRenderMode.VertexLit;
+                newDetailPrototypes[dIndex].useInstancing = true;
+            }
+            else
+            {
+                newDetailPrototypes[dIndex].usePrototypeMesh = false;
+                newDetailPrototypes[dIndex].renderMode = DetailRenderMode.GrassBillboard;
+            }
+            dIndex++;
+        }
+        terrainData.detailPrototypes = newDetailPrototypes;
+
+        for (int i = 0; i < terrainData.detailPrototypes.Length; ++i)
+        {
+            int[,] detailMap = new int[terrainData.detailWidth, terrainData.detailHeight];
+            for (int y = 0; y < terrainData.detailHeight; y += detailSpacing)
+            {
+                for (int x = 0; x < terrainData.detailWidth; x += detailSpacing)
+                {
+                    if (UnityEngine.Random.Range(0.0f, 1.0f) > details[i].density) continue;
+
+                    int xHM = (int)(x / (float)terrainData.detailWidth * terrainData.heightmapResolution);
+                    int yHM = (int)(y / (float)terrainData.detailHeight * terrainData.heightmapResolution);
+
+                    float thisNoise = Utility.Map(Mathf.PerlinNoise(x * details[i].feather,
+                                                y * details[i].feather), 0, 1, 0.5f, 1);
+                    float thisHeightStart = details[i].minHeight * thisNoise -
+                                            details[i].overlap * thisNoise;
+                    float nextHeightStart = details[i].maxHeight * thisNoise +
+                                            details[i].overlap * thisNoise;
+
+                    float thisHeight = heightMap[yHM, xHM];
+                    float steepness = terrainData.GetSteepness(xHM / (float)terrainData.size.x,
+                                                                yHM / (float)terrainData.size.z);
+                    if ((thisHeight >= thisHeightStart && thisHeight <= nextHeightStart) &&
+                        (steepness >= details[i].minSlope && steepness <= details[i].maxSlope))
+                    {
+                        detailMap[y, x] = 1;
+                    }
+                }
+            }
+            terrainData.SetDetailLayer(0, 0, i, detailMap);
+        }
+    }
+
+    public void AddNewDetails()
+    {
+        details.Add(new Detail());
+    }
+
+    public void RemoveDetails()
+    {
+        List<Detail> keptDetails = new List<Detail>();
+        for (int i = 0; i < details.Count; ++i)
+        {
+            if (!details[i].remove)
+            {
+                keptDetails.Add(details[i]);
+            }
+        }
+        if (keptDetails.Count == 0)
+        {    // Don't want to keep any
+            keptDetails.Add(details[0]);  // Add at least one;
+        }
+        details = keptDetails;
+    }
+    public void RemoveAllDetailsFromTerrain()
+    {
+        int[,] detailMap = new int[terrainData.detailWidth, terrainData.detailHeight];
+        for (int i = 0; i < terrainData.detailPrototypes.Length; ++i)
+        {
+
+            terrainData.SetDetailLayer(0,0,i,detailMap);
+        }
+
+        terrainData.detailPrototypes = Array.Empty<DetailPrototype>();
+    }
+
+    public void AddWater()
+    {
+        GameObject water = GameObject.Find("water");
+        if (!water)
+        {
+            water = Instantiate(waterGO, this.transform.position, this.transform.rotation);
+            water.name = "water";
+        }
+        water.transform.position = this.transform.position +
+                        new Vector3(terrainData.size.x / 2,
+                                    waterHeight * terrainData.size.y,
+                                    terrainData.size.z / 2);
+        water.transform.localScale = new Vector3(terrainData.size.x, 1, terrainData.size.z);
+    }
+
+    public void DrawShoreline()
+    {
+        float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.heightmapResolution,
+                                                    terrainData.heightmapResolution);
+
+        int quadCount = 0;
+        //GameObject quads = new GameObject("QUADS");
+        for (int y = 0; y < terrainData.heightmapResolution; y++)
+        {
+            for (int x = 0; x < terrainData.heightmapResolution; x++)
+            {
+                //find spot on shore
+                Vector2 thisLocation = new Vector2(x, y);
+                List<Vector2> neighbours = GenerateNeighbours(thisLocation,
+                                                              terrainData.heightmapResolution,
+                                                              terrainData.heightmapResolution);
+                foreach (Vector2 n in neighbours)
+                {
+                    if (heightMap[x, y] < waterHeight && heightMap[(int)n.x, (int)n.y] > waterHeight)
+                    {
+                        //if (quadCount < 1000)
+                        //{
+                        quadCount++;
+                        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                        go.transform.localScale *= 20.0f;
+
+                        go.transform.position = this.transform.position +
+                                        new Vector3(y / (float)terrainData.heightmapResolution
+                                                      * terrainData.size.z,
+                                                    waterHeight * terrainData.size.y,
+                                                    x / (float)terrainData.heightmapResolution
+                                                      * terrainData.size.x);
+
+                        go.transform.LookAt(new Vector3(n.y / (float)terrainData.heightmapResolution
+                                                            * terrainData.size.z,
+                                                        waterHeight * terrainData.size.y,
+                                                        n.x / (float)terrainData.heightmapResolution
+                                                            * terrainData.size.x));
+
+                        go.transform.Rotate(90, 0, 0);
+
+                        go.tag = "Shore";
+
+
+                        //go.transform.parent = quads.transform;
+                        // }
+                    }
+                }
+            }
+        }
+
+        GameObject[] shoreQuads = GameObject.FindGameObjectsWithTag("Shore");
+        MeshFilter[] meshFilters = new MeshFilter[shoreQuads.Length];
+        for (int m = 0; m < shoreQuads.Length; m++)
+        {
+            meshFilters[m] = shoreQuads[m].GetComponent<MeshFilter>();
+        }
+        CombineInstance[] combine = new CombineInstance[meshFilters.Length];
+        int i = 0;
+        while (i < meshFilters.Length)
+        {
+            combine[i].mesh = meshFilters[i].sharedMesh;
+            combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
+            meshFilters[i].gameObject.SetActive(false);
+            i++;
+        }
+
+        GameObject currentShoreLine = GameObject.Find("ShoreLine");
+        if (currentShoreLine)
+        {
+            DestroyImmediate(currentShoreLine);
+        }
+        GameObject shoreLine = new GameObject();
+        shoreLine.name = "ShoreLine";
+        shoreLine.AddComponent<WaveAnimation>();
+        shoreLine.transform.position = this.transform.position;
+        shoreLine.transform.rotation = this.transform.rotation;
+        MeshFilter thisMF = shoreLine.AddComponent<MeshFilter>();
+        thisMF.mesh = new Mesh();
+        shoreLine.GetComponent<MeshFilter>().sharedMesh.CombineMeshes(combine);
+
+        MeshRenderer r = shoreLine.AddComponent<MeshRenderer>();
+        r.sharedMaterial = shoreLineMaterial;
+
+        for (int sQ = 0; sQ < shoreQuads.Length; sQ++)
+            DestroyImmediate(shoreQuads[sQ]);
+
+
     }
 
     public void RandomTerrain()
@@ -647,7 +903,8 @@ public class CustomTerrain : MonoBehaviour
             SerializedProperty tag = tagProperty.GetArrayElementAtIndex(i);
             if (tag.stringValue.Equals(newTag))
             {
-                found = true; break;
+                found = true;
+                return i;
             }
         }
 
